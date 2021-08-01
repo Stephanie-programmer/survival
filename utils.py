@@ -17,18 +17,17 @@ class Player:
         self.position.x += position_diff.x
         self.position.y += position_diff.y
 
-    def add_lives(self, num_lives):
-        self.lives += num_lives
+    def add_lives(self, number_lives):
+        self.lives += number_lives
 
-    def minus_lives(self, num_lives):
-        self.lives -= num_lives
+    def minus_lives(self, number_lives):
+        self.lives -= number_lives
 
-    def player_pos_in_screen(self, min_x, max_x, min_y, max_y):
+    def restrict_in_screen(self, min_x, max_x, min_y, max_y):
         if self.position.x < min_x:
             self.position.x = min_x
         elif self.position.x > max_x:
             self.position.x = max_x
-
         if self.position.y < min_y:
             self.position.y = min_y
         elif self.position.y > max_y:
@@ -49,8 +48,8 @@ class Enemy:
 class Heart:
     def __init__(self, position, radius, lives):
         self.position = position
-        self.radius = radius
         self.lives = lives
+        self.radius = radius
 
     def is_player_collision(self, player):
         return (self.position.x - player.position.x) ** 2 + (self.position.y - player.position.y) ** 2 < (
@@ -58,12 +57,11 @@ class Heart:
 
 
 class GameStatus:
-    def __init__(self, screen=None, enemies=None, hearts=None, running=None, screen_size=None,
-                 player_start_position=None, player=None):
-        self.screen = screen
-        self.enemies = enemies
-        self.hearts = hearts
-        self.running = running
-        self.screen_size = screen_size
-        self.player_start_position = player_start_position
-        self.player = player
+    def __init__(self):
+        self.screen = None
+        self.enemies = None
+        self.hearts = None
+        self.running = None
+        self.screen_size = None
+        self.player_start_position = None
+        self.player = None
