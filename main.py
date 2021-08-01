@@ -3,15 +3,11 @@ import pygame
 from utils import *
 
 BG_COLOR = (0, 0, 0)
-PLAYER_RADIUS = 30
-PLAYER_COLOR = (0, 0, 225)
+PLAYER_RADIUS = 70
 PLAYER_POS_DIFF = 5
 
 ENEMY_RADIUS = 50
-ENEMY_COLOR = (225, 0, 0)
-
-HEART_RADIUS = 20
-HEART_COLOR = (0, 225, 0)
+HEART_RADIUS = 50
 
 LIGHT_GREY = (220, 220, 220)
 TOP_LEFT_CORNER = (10, 10)
@@ -28,6 +24,22 @@ def first_game_setup():
         position=game_status.player_start_position, lives=3, radius=PLAYER_RADIUS)
     game_status.enemies = [Enemy(Position(100, 100), 1, ENEMY_RADIUS)]
     game_status.hearts = [Heart(Position(400, 400), HEART_RADIUS, 1)]
+    load_images_to_game_status()
+
+
+def load_images_to_game_status():
+    player_image = pygame.image.load('snail.png')
+    player_image = pygame.transform.scale(player_image, (PLAYER_RADIUS, PLAYER_RADIUS))
+    heart_image = pygame.image.load('good-mushroom.png')
+    heart_image = pygame.transform.scale(heart_image, (HEART_RADIUS, HEART_RADIUS))
+    enemy_image = pygame.image.load('sad-mushroom.png')
+    enemy_image = pygame.transform.scale(enemy_image, (ENEMY_RADIUS, ENEMY_RADIUS))
+
+    game_status.images = {
+        "player": player_image,
+        "heart": heart_image,
+        "enemy": enemy_image
+    }
 
 
 def check_event():
@@ -47,12 +59,12 @@ def draw():
 
 def draw_hearts():
     for heart in game_status.hearts:
-        pygame.draw.circle(game_status.screen, HEART_COLOR, heart.position.to_tuple(), HEART_RADIUS)
+        game_status.screen.blit(game_status.images["heart"], heart.position.to_tuple())
 
 
 def draw_enemies():
     for enemy in game_status.enemies:
-        pygame.draw.circle(game_status.screen, ENEMY_COLOR, enemy.position.to_tuple(), ENEMY_RADIUS)
+        game_status.screen.blit(game_status.images["enemy"], enemy.position.to_tuple())
 
 
 def draw_lives():
@@ -63,8 +75,10 @@ def draw_lives():
 
 def draw_player():
     player_pos = (game_status.player.position.x, game_status.player.position.y)
-    pygame.draw.circle(game_status.screen, PLAYER_COLOR,
-                       player_pos, game_status.player.radius)
+    game_status.screen.blit(game_status.images["player"], player_pos)
+
+    # pygame.draw.circle(game_status.screen, PLAYER_COLOR,
+    #                    player_pos, game_status.player.radius)
 
 
 def update_player():

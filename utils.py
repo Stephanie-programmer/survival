@@ -41,9 +41,7 @@ class Enemy:
         self.radius = radius
 
     def is_player_collision(self, player):
-        return (self.position.x - player.position.x) ** 2 + (self.position.y - player.position.y) ** 2 < (
-                self.radius + player.radius) ** 2
-
+        return abs(self.position.x - player.position.x) < (self.radius) and abs(self.position.y - player.position.y) < (self.radius)
 
 class Heart:
     def __init__(self, position, radius, lives):
@@ -65,3 +63,4 @@ class GameStatus:
         self.screen_size = None
         self.player_start_position = None
         self.player = None
+        self.images = None
