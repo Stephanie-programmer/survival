@@ -3,15 +3,11 @@ import pygame
 from utils import *
 
 BG_COLOR = (0, 0, 0)
-PLAYER_RADIUS = 30
-PLAYER_COLOR = (0, 0, 225)
+PLAYER_LENGTH = 70
 PLAYER_POS_DIFF = 5
 
-ENEMY_RADIUS = 50
-ENEMY_COLOR = (225, 0, 0)
-
-HEART_RADIUS = 20
-HEART_COLOR = (0, 225, 0)
+ENEMY_LENGTH = 50
+HEART_LENGTH = 50
 
 LIGHT_GREY = (220, 220, 220)
 TOP_LEFT_CORNER = (10, 10)
@@ -25,9 +21,25 @@ def first_game_setup():
     game_status.screen = pygame.display.set_mode(game_status.screen_size)
     game_status.player_start_position = Position(250, 400)
     game_status.player = Player(
-        position=game_status.player_start_position, lives=3, radius=PLAYER_RADIUS)
-    game_status.enemies = [Enemy(Position(100, 100), 1, ENEMY_RADIUS)]
-    game_status.hearts = [Heart(Position(400, 400), HEART_RADIUS, 1)]
+        position=game_status.player_start_position, lives=3, length=PLAYER_LENGTH)
+    game_status.enemies = [Enemy(Position(100, 100), 1, ENEMY_LENGTH)]
+    game_status.hearts = [Heart(Position(400, 400), HEART_LENGTH, 1)]
+    load_images_to_game_status()
+
+
+def load_images_to_game_status():
+    player_image = pygame.image.load('snail.png')
+    player_image = pygame.transform.scale(player_image, (PLAYER_LENGTH, PLAYER_LENGTH))
+    heart_image = pygame.image.load('good-mushroom.png')
+    heart_image = pygame.transform.scale(heart_image, (HEART_LENGTH, HEART_LENGTH))
+    enemy_image = pygame.image.load('sad-mushroom.png')
+    enemy_image = pygame.transform.scale(enemy_image, (ENEMY_LENGTH, ENEMY_LENGTH))
+
+    game_status.images = {
+        "player": player_image,
+        "heart": heart_image,
+        "enemy": enemy_image
+    }
 
 
 def check_event():
@@ -47,12 +59,12 @@ def draw():
 
 def draw_hearts():
     for heart in game_status.hearts:
-        pygame.draw.circle(game_status.screen, HEART_COLOR, heart.position.to_tuple(), HEART_RADIUS)
+        game_status.screen.blit(game_status.images["heart"], heart.position.to_tuple())
 
 
 def draw_enemies():
     for enemy in game_status.enemies:
-        pygame.draw.circle(game_status.screen, ENEMY_COLOR, enemy.position.to_tuple(), ENEMY_RADIUS)
+        game_status.screen.blit(game_status.images["enemy"], enemy.position.to_tuple())
 
 
 def draw_lives():
@@ -63,8 +75,7 @@ def draw_lives():
 
 def draw_player():
     player_pos = (game_status.player.position.x, game_status.player.position.y)
-    pygame.draw.circle(game_status.screen, PLAYER_COLOR,
-                       player_pos, game_status.player.radius)
+    game_status.screen.blit(game_status.images["player"], player_pos)
 
 
 def update_player():
@@ -78,8 +89,8 @@ def update_player():
     if pressed_keys[pygame.K_RIGHT]:
         game_status.player.update_position(Position(PLAYER_POS_DIFF, 0))
 
-    game_status.player.restrict_in_screen(PLAYER_RADIUS, game_status.screen_size[0] - PLAYER_RADIUS, PLAYER_RADIUS,
-                                          game_status.screen_size[1] - PLAYER_RADIUS)
+    game_status.player.restrict_in_screen(PLAYER_LENGTH, game_status.screen_size[0] - PLAYER_LENGTH, PLAYER_LENGTH,
+                                          game_status.screen_size[1] - PLAYER_LENGTH)
 
 
 def update_enemies():

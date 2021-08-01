@@ -8,10 +8,10 @@ class Position:
 
 
 class Player:
-    def __init__(self, position, lives, radius):
+    def __init__(self, position, lives, length):
         self.position = position
         self.lives = lives
-        self.radius = radius
+        self.length = length
 
     def update_position(self, position_diff):
         self.position.x += position_diff.x
@@ -35,25 +35,25 @@ class Player:
 
 
 class Enemy:
-    def __init__(self, position, lives, radius):
+    def __init__(self, position, lives, length):
         self.position = position
         self.lives = lives
-        self.radius = radius
+        self.length = length
 
     def is_player_collision(self, player):
-        return (self.position.x - player.position.x) ** 2 + (self.position.y - player.position.y) ** 2 < (
-                self.radius + player.radius) ** 2
+        return abs(self.position.x - player.position.x) < (self.length) and abs(self.position.y - player.position.y) < (
+            self.length)
 
 
 class Heart:
-    def __init__(self, position, radius, lives):
+    def __init__(self, position, length, lives):
         self.position = position
         self.lives = lives
-        self.radius = radius
+        self.length = length
 
     def is_player_collision(self, player):
-        return (self.position.x - player.position.x) ** 2 + (self.position.y - player.position.y) ** 2 < (
-                self.radius + player.radius) ** 2
+        return abs(self.position.x - player.position.x) < (self.length) and abs(self.position.y - player.position.y) < (
+            self.length)
 
 
 class GameStatus:
@@ -65,3 +65,4 @@ class GameStatus:
         self.screen_size = None
         self.player_start_position = None
         self.player = None
+        self.images = None
