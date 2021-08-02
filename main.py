@@ -1,16 +1,22 @@
+import math
+
 import pygame
 
 from utils import *
 
+COUNT_DOWN = 10
+
 BG_COLOR = (0, 0, 0)
 PLAYER_LENGTH = 70
-PLAYER_POS_DIFF = 5
+PLAYER_POS_DIFF = 1
 
 ENEMY_LENGTH = 50
 HEART_LENGTH = 50
 
 LIGHT_GREY = (220, 220, 220)
-TOP_LEFT_CORNER = (10, 10)
+LIVES_MSG_POSITION = (10, 40)
+COUNT_DOWN_MSG_POSITION = (10, 10)
+START_MSG_POSITION = (10, 250)
 
 
 def first_game_setup():
@@ -25,6 +31,15 @@ def first_game_setup():
     game_status.enemies = [Enemy(Position(100, 100), 1, ENEMY_LENGTH)]
     game_status.hearts = [Heart(Position(400, 400), HEART_LENGTH, 1)]
     load_images_to_game_status()
+    game_status.count_down = {
+        "total time": COUNT_DOWN * 1000,
+        "initial time": pygame.time.get_ticks(),
+        "time left": COUNT_DOWN * 1000
+    }
+    game_status.pause = {
+        "is paused": True,
+        "is beginning": True
+    }
 
 
 def load_images_to_game_status():
@@ -48,13 +63,21 @@ def check_event():
             game_status.running = False
 
 
-def draw():
+def draw_game():
     game_status.screen.fill(BG_COLOR)
     draw_player()
     draw_lives()
     draw_enemies()
     draw_hearts()
+    draw_count_down_msg()
     pygame.display.update()
+
+
+def draw_count_down_msg():
+    font = pygame.font.Font(None, 50)
+    count_down_msg = font.render("count down: " + str(math.ceil(game_status.count_down["time left"] / 1000)), True,
+                                 LIGHT_GREY)
+    game_status.screen.blit(count_down_msg, COUNT_DOWN_MSG_POSITION)
 
 
 def draw_hearts():
@@ -70,7 +93,7 @@ def draw_enemies():
 def draw_lives():
     font = pygame.font.Font(None, 50)
     lives_msg = font.render("lives: " + str(game_status.player.lives), True, LIGHT_GREY)
-    game_status.screen.blit(lives_msg, TOP_LEFT_CORNER)
+    game_status.screen.blit(lives_msg, LIVES_MSG_POSITION)
 
 
 def draw_player():
@@ -110,6 +133,32 @@ def update():
     update_player()
     update_enemies()
     update_heart()
+    update_count_down()
+
+
+def update_count_down():
+    curr_time = pygame.time.get_ticks()
+    time_left = (game_status.count_down["initial time"] + game_status.count_down["total time"]) - curr_time
+    game_status.count_down["time left"] = time_left
+    if time_left < 0:
+        game_status.pause["is paused"] = True
+        game_status.pause["is beginning"] = False
+
+
+def draw_start_msg():
+    game_status.screen.fill(BG_COLOR)
+    font = pygame.font.Font(None, 50)
+    start_msg = font.render("The game starts now", True, LIGHT_GREY)
+    game_status.screen.blit(start_msg, START_MSG_POSITION)
+    pygame.display.update()
+
+
+def draw_end_msg():
+    game_status.screen.fill(BG_COLOR)
+    font = pygame.font.Font(None, 50)
+    start_msg = font.render("The game ends now", True, LIGHT_GREY)
+    game_status.screen.blit(start_msg, START_MSG_POSITION)
+    pygame.display.update()
 
 
 # Press the green button in the gutter to run the script.
@@ -118,7 +167,15 @@ if __name__ == '__main__':
     first_game_setup()
     while game_status.running:
         check_event()
-        update()
-        draw()
+        if game_status.pause["is paused"]:
+            if game_status.pause["is beginning"]:
+                draw_start_msg()
+                pygame.time.wait(1000)
+                game_status.pause["is paused"] = False
+            else:
+                draw_end_msg()
+        else:
+            update()
+            draw_game()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

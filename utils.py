@@ -66,3 +66,5 @@ class GameStatus:
         self.player_start_position = None
         self.player = None
         self.images = None
+        self.count_down = None
+        self.pause = None
