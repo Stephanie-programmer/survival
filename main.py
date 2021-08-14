@@ -27,6 +27,19 @@ def first_game_setup():
     game_status.restart = False
 
 
+def init_level():
+    pygame.display.set_caption("survival level: " + str(game_status.level))
+    current_level_data = get_current_level_data(game_status.level)
+    game_status.player = current_level_data["player"]
+    game_status.enemies = current_level_data["enemies"]
+    game_status.hearts = current_level_data["hearts"]
+    game_status.count_down = {
+        "total time": current_level_data["count down"] * 1000,
+        "initial time": pygame.time.get_ticks(),
+        "time left": current_level_data["count down"] * 1000
+    }
+
+
 def load_images_to_game_status():
     player_image = pygame.image.load('snail.png')
     player_image = pygame.transform.scale(player_image, (PLAYER_LENGTH, PLAYER_LENGTH))
@@ -34,6 +47,7 @@ def load_images_to_game_status():
     heart_image = pygame.transform.scale(heart_image, (HEART_LENGTH, HEART_LENGTH))
     enemy_image = pygame.image.load('sad-mushroom.png')
     enemy_image = pygame.transform.scale(enemy_image, (ENEMY_LENGTH, ENEMY_LENGTH))
+
     game_status.images = {
         "player": player_image,
         "heart": heart_image,
@@ -118,10 +132,10 @@ def update():
     update_enemies()
     update_heart()
     update_count_down()
-    check_died_player()
+    update_game_by_lives()
 
 
-def check_died_player():
+def update_game_by_lives():
     if game_status.player.lives <= 0:
         game_status.restart = True
 
@@ -137,7 +151,7 @@ def update_count_down():
 
 def draw_level_start_msg():
     game_status.screen.fill(BG_COLOR)
-    font = pygame.font.Font(None, 50)
+    font = pygame.font.Font(None, 30)
     start_msg = font.render("The game starts now. Level " + str(game_status.level), True, LIGHT_GREY)
     game_status.screen.blit(start_msg, START_MSG_POSITION)
     pygame.display.update()
@@ -145,29 +159,17 @@ def draw_level_start_msg():
 
 def draw_level_end_msg():
     game_status.screen.fill(BG_COLOR)
-    font = pygame.font.Font(None, 50)
+    font = pygame.font.Font(None, 30)
     start_msg = font.render("You survived. Next level start in 3 seconds", True, LIGHT_GREY)
     game_status.screen.blit(start_msg, START_MSG_POSITION)
     pygame.display.update()
 
 
-def init_level():
-    pygame.display.set_caption("survival level:" + str(game_status.level))
-    game_status.player = get_current_level_data(game_status.level)["player"]
-    game_status.enemies = get_current_level_data(game_status.level)["enemies"]
-    game_status.hearts = get_current_level_data(game_status.level)["hearts"]
-    game_status.count_down = {
-        "total time": get_current_level_data(game_status.level)["count down"] * 1000,
-        "initial time": pygame.time.get_ticks(),
-        "time left": get_current_level_data(game_status.level)["count down"] * 1000
-    }
-
-
 def draw_game_restart_msg():
     game_status.screen.fill(BG_COLOR)
     font = pygame.font.Font(None, 30)
-    start_msg = font.render("You did not survive. Should restart the game? y/n", True, LIGHT_GREY)
-    game_status.screen.blit(start_msg, START_MSG_POSITION)
+    restart_msg = font.render("You are died. Should restart? y/n", True, LIGHT_GREY)
+    game_status.screen.blit(restart_msg, START_MSG_POSITION)
     pygame.display.update()
 
 
@@ -175,12 +177,27 @@ def make_end_game_decision():
     pressed_keys = pygame.key.get_pressed()
     if pressed_keys[pygame.K_y]:
         game_status.restart = not game_status.restart
-        game_status.level = 1
+        # game_status.level = 1 # comment out if want to restart from last level
         init_level()
         game_status.pause["is paused"] = True
         game_status.pause["is beginning"] = True
     elif pressed_keys[pygame.K_n]:
         game_status.running = False
+
+
+def check_winning():
+    if get_max_level() < game_status.level + 1:
+        draw_winning_msg()
+        pygame.time.wait(3000)
+        game_status.running = False
+
+
+def draw_winning_msg():
+    game_status.screen.fill(BG_COLOR)
+    font = pygame.font.Font(None, 30)
+    restart_msg = font.render("You WIN", True, LIGHT_GREY)
+    game_status.screen.blit(restart_msg, START_MSG_POSITION)
+    pygame.display.update()
 
 
 # Press the green button in the gutter to run the script.
@@ -198,6 +215,7 @@ if __name__ == '__main__':
             else:
                 draw_level_end_msg()
                 pygame.time.wait(3000)
+                check_winning()
                 game_status.level += 1
                 game_status.pause["is beginning"] = not game_status.pause["is beginning"]
         elif game_status.restart:

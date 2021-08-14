@@ -4,7 +4,7 @@ class Position:
         self.y = y
 
     def to_tuple(self):
-        return self.x, self.y
+        return (self.x, self.y)
 
 
 class Player:
@@ -72,9 +72,34 @@ class GameStatus:
         self.restart = None
 
 
+PLAYER_LENGTH = 70
 ENEMY_LENGTH = 50
 HEART_LENGTH = 50
-PLAYER_LENGTH = 70
+
+
+def get_max_level():
+    levels = {
+        1: {
+            "hearts": [Heart(Position(400, 400), HEART_LENGTH, 1)],
+            "enemies": [Enemy(Position(100, 100), 1, ENEMY_LENGTH)],
+            "lives": 3,
+            "count down": 10
+        },
+        2: {
+            "hearts": [Heart(Position(400, 400), HEART_LENGTH, 1)],
+            "enemies": [Enemy(Position(100, 100), 1, ENEMY_LENGTH), Enemy(Position(100, 400), 1, ENEMY_LENGTH)],
+            "lives": 2,
+            "count down": 15
+        },
+        3: {
+            "hearts": [Heart(Position(400, 400), HEART_LENGTH, 1)],
+            "enemies": [Enemy(Position(100, 100), 1, ENEMY_LENGTH), Enemy(Position(100, 400), 1, ENEMY_LENGTH),
+                        Enemy(Position(200, 200), 1, ENEMY_LENGTH)],
+            "lives": 1,
+            "count down": 20
+        },
+    }
+    return max(levels.keys())
 
 
 def get_current_level_data(current_level):
@@ -97,8 +122,9 @@ def get_current_level_data(current_level):
                         Enemy(Position(200, 200), 1, ENEMY_LENGTH)],
             "lives": 1,
             "count down": 20
-        }
+        },
     }
+
     current_level_data = levels[current_level]
     current_level_data["player"] = Player(position=Position(250, 400), lives=current_level_data["lives"],
                                           length=PLAYER_LENGTH)
