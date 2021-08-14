@@ -4,14 +4,8 @@ import pygame
 
 from utils import *
 
-COUNT_DOWN = 10
-
 BG_COLOR = (0, 0, 0)
-PLAYER_LENGTH = 70
 PLAYER_POS_DIFF = 1
-
-ENEMY_LENGTH = 50
-HEART_LENGTH = 50
 
 LIGHT_GREY = (220, 220, 220)
 LIVES_MSG_POSITION = (10, 40)
@@ -21,25 +15,16 @@ START_MSG_POSITION = (10, 250)
 
 def first_game_setup():
     pygame.init()
-    pygame.display.set_caption("survival")
+    game_status.level = 1
     game_status.running = True
     game_status.screen_size = (500, 500)
     game_status.screen = pygame.display.set_mode(game_status.screen_size)
-    game_status.player_start_position = Position(250, 400)
-    game_status.player = Player(
-        position=game_status.player_start_position, lives=3, length=PLAYER_LENGTH)
-    game_status.enemies = [Enemy(Position(100, 100), 1, ENEMY_LENGTH)]
-    game_status.hearts = [Heart(Position(400, 400), HEART_LENGTH, 1)]
     load_images_to_game_status()
-    game_status.count_down = {
-        "total time": COUNT_DOWN * 1000,
-        "initial time": pygame.time.get_ticks(),
-        "time left": COUNT_DOWN * 1000
-    }
     game_status.pause = {
         "is paused": True,
         "is beginning": True
     }
+    game_status.restart = False
 
 
 def load_images_to_game_status():
@@ -49,7 +34,6 @@ def load_images_to_game_status():
     heart_image = pygame.transform.scale(heart_image, (HEART_LENGTH, HEART_LENGTH))
     enemy_image = pygame.image.load('sad-mushroom.png')
     enemy_image = pygame.transform.scale(enemy_image, (ENEMY_LENGTH, ENEMY_LENGTH))
-
     game_status.images = {
         "player": player_image,
         "heart": heart_image,
@@ -134,6 +118,12 @@ def update():
     update_enemies()
     update_heart()
     update_count_down()
+    check_died_player()
+
+
+def check_died_player():
+    if game_status.player.lives <= 0:
+        game_status.restart = True
 
 
 def update_count_down():
@@ -145,20 +135,52 @@ def update_count_down():
         game_status.pause["is beginning"] = False
 
 
-def draw_start_msg():
+def draw_level_start_msg():
     game_status.screen.fill(BG_COLOR)
     font = pygame.font.Font(None, 50)
-    start_msg = font.render("The game starts now", True, LIGHT_GREY)
+    start_msg = font.render("The game starts now. Level " + str(game_status.level), True, LIGHT_GREY)
     game_status.screen.blit(start_msg, START_MSG_POSITION)
     pygame.display.update()
 
 
-def draw_end_msg():
+def draw_level_end_msg():
     game_status.screen.fill(BG_COLOR)
     font = pygame.font.Font(None, 50)
-    start_msg = font.render("The game ends now", True, LIGHT_GREY)
+    start_msg = font.render("You survived. Next level start in 3 seconds", True, LIGHT_GREY)
     game_status.screen.blit(start_msg, START_MSG_POSITION)
     pygame.display.update()
+
+
+def init_level():
+    pygame.display.set_caption("survival level:" + str(game_status.level))
+    game_status.player = get_current_level_data(game_status.level)["player"]
+    game_status.enemies = get_current_level_data(game_status.level)["enemies"]
+    game_status.hearts = get_current_level_data(game_status.level)["hearts"]
+    game_status.count_down = {
+        "total time": get_current_level_data(game_status.level)["count down"] * 1000,
+        "initial time": pygame.time.get_ticks(),
+        "time left": get_current_level_data(game_status.level)["count down"] * 1000
+    }
+
+
+def draw_game_restart_msg():
+    game_status.screen.fill(BG_COLOR)
+    font = pygame.font.Font(None, 30)
+    start_msg = font.render("You did not survive. Should restart the game? y/n", True, LIGHT_GREY)
+    game_status.screen.blit(start_msg, START_MSG_POSITION)
+    pygame.display.update()
+
+
+def make_end_game_decision():
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[pygame.K_y]:
+        game_status.restart = not game_status.restart
+        game_status.level = 1
+        init_level()
+        game_status.pause["is paused"] = True
+        game_status.pause["is beginning"] = True
+    elif pressed_keys[pygame.K_n]:
+        game_status.running = False
 
 
 # Press the green button in the gutter to run the script.
@@ -169,11 +191,18 @@ if __name__ == '__main__':
         check_event()
         if game_status.pause["is paused"]:
             if game_status.pause["is beginning"]:
-                draw_start_msg()
+                draw_level_start_msg()
                 pygame.time.wait(1000)
                 game_status.pause["is paused"] = False
+                init_level()
             else:
-                draw_end_msg()
+                draw_level_end_msg()
+                pygame.time.wait(3000)
+                game_status.level += 1
+                game_status.pause["is beginning"] = not game_status.pause["is beginning"]
+        elif game_status.restart:
+            draw_game_restart_msg()
+            make_end_game_decision()
         else:
             update()
             draw_game()
